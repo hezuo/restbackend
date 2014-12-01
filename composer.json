@@ -1,0 +1,10 @@
+{
+    "require": {
+        "silex/silex": "~1.2",
+        "doctrine/orm": "*",
+        "dflydev/doctrine-orm-service-provider": "1.0.*@dev"        
+    },
+        "autoload": {
+            "psr-0": {"": "Entity/"}
+        }
+}
