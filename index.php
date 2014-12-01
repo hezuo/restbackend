@@ -4,10 +4,12 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Dflydev\Provider\DoctrineOrm\DoctrineOrmServiceProvider;
 use Silex\Application;
 use Silex\Provider\DoctrineServiceProvider;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
-use  Doctrine\ORM\Configuration;
+use Doctrine\ORM\Configuration;
 use Doctrine\Common\Annotations\AnnotationReader;
 
 $entityFolder = realpath(__DIR__).DIRECTORY_SEPARATOR."Entity";
@@ -53,6 +55,61 @@ $app->get('/actividad', function()   use ($app){
     ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
     return json_encode($results);    
 });
+
+$app->post('/actividad', function(Request $request) use ($app){
+  $idPlanificacion =  $request->get('id_planificacion');  
+  $descripcionActividad = $request->get('descripcion_actividad');
+  $idTipoActividad=  $request->get('id_tipo_actividad');
+  $idIpr=$request->get('id_ipr');
+  $fechaSemanaActividad=$request->get('fecha_semana_actividad');
+    $idProyecto=$request->get('id_proyecto');
+    $hhPlanificadaLunes=$request->get('hh_planificada_lunes');
+    $hhRealLunes=$request->get('hh_real_lunes');
+    $hhPlanificadaMartes=$request->get('hh_planificada_martes');
+    $hhRealMartes=$request->get('hh_real_martes');
+    $hhPlanificadaMiercoles=$request->get('hh_planificada_miercoles');
+    $hhRealMiercoles= $request->get('hh_real_miercoles');
+    $hhPlanificadaJueves = $request->get('hh_planificada_jueves');
+    $hhRealJueves=$request->get('hh_real_jueves');
+    $hhPlanificadaViernes =$request->get('hh_planificada_viernes');
+    $hhRealViernes=$request->get('hh_real_viernes');
+    $hhPlanificadaSabado=$request->get('hh_planificada_sabado');
+    $hhRealSabado=$request->get('hh_real_sabado');
+    $hhPlanificadaDomingo=$request->get('hh_planificada_domingo');
+    $hhRealDomingo=$request->get('hh_real_domingo');
+    $idOrigen=$request->get('id_origen');
+    
+    $fechaSemanaActividad = \DateTime::createFromFormat('Y-m-d', $fechaSemanaActividad);
+    
+    $newActividad = new \Entity\TbActividad();
+    $newActividad->setIdPlanificacion($idPlanificacion);
+    $newActividad->setDescripcionActividad($descripcionActividad);
+    $newActividad->setIdTipoActividad($idTipoActividad);
+    $newActividad->setIdIpr($idIpr);
+    $newActividad->setFechaSemanaActividad($fechaSemanaActividad);
+    $newActividad->setIdProyecto($idProyecto);
+    $newActividad->setHhPlanificadaLunes($hhPlanificadaLunes);
+    $newActividad->setHhPlanificadaMartes($hhPlanificadaMartes);
+    $newActividad->setHhPlanificadaMiercoles($hhPlanificadaMiercoles);
+    $newActividad->setHhPlanificadaJueves($hhPlanificadaJueves);
+    $newActividad->setHhPlanificadaViernes($hhPlanificadaViernes);
+    $newActividad->setHhPlanificadaSabado($hhPlanificadaSabado);
+    $newActividad->setHhPlanificadaDomingo($hhPlanificadaDomingo);
+    $newActividad->setHhRealLunes($hhRealLunes);
+    $newActividad->setHhRealMartes($hhRealMartes);
+    $newActividad->setHhRealMiercoles($hhRealMiercoles);
+    $newActividad->setHhRealJueves($hhRealJueves);
+    $newActividad->setHhRealViernes($hhRealViernes);
+    $newActividad->setHhRealSabado($hhRealSabado);
+    $newActividad->setHhRealDomingo($hhRealDomingo);
+    $newActividad->setIdOrigen($idOrigen);
+    
+    $app['em']->persist($newActividad);
+    $app['em']->flush();
+    
+    return json_encode(array('id' => $newActividad->getIdActividad()));
+});
+    
 $app->get('/ipr', function()   use ($app){
         $repo= $app['em']->getRepository('Entity\TbIpr');
         $results = $repo->createQueryBuilder('i')
