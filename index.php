@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 
 use Dflydev\Provider\DoctrineOrm\DoctrineOrmServiceProvider;
 use Silex\Application;
@@ -16,14 +16,16 @@ $entityFolder = realpath(__DIR__).DIRECTORY_SEPARATOR."Entity";
 $proxiesFolder = realpath(__DIR__).DIRECTORY_SEPARATOR."Proxies";
 $isDevMode = true;
 
-$cache = new \Doctrine\Common\Cache\ArrayCache;
+$cache = new \Doctrine\Common\Cache\ArrayCache();
 $reader = new AnnotationReader();
-$driver = new \Doctrine\ORM\Mapping\Driver\AnnotationDriver($reader, array($entityFolder));
-$config = Setup::createAnnotationMetadataConfiguration(array($entityFolder), $isDevMode);
+$driver = new \Doctrine\ORM\Mapping\Driver\AnnotationDriver($reader, array(
+        $entityFolder));
+$config = Setup::createAnnotationMetadataConfiguration(array(
+        $entityFolder), $isDevMode);
 
-$config->setMetadataCacheImpl( $cache );
-$config->setQueryCacheImpl( $cache );
-$config->setMetadataDriverImpl( $driver );
+$config->setMetadataCacheImpl($cache);
+$config->setQueryCacheImpl($cache);
+$config->setMetadataDriverImpl($driver);
 ;
 $config->setProxyDir($proxiesFolder);
 $config->setProxyNamespace('Proxies');
@@ -33,51 +35,85 @@ $classLoader = new \Doctrine\Common\ClassLoader('Entity', realpath(__DIR__));
 $classLoader->register();
 
 $connectionOptions = array(
-        'driver'        => 'pdo_mysql',
-        'host'          => 'localhost',
-        'dbname'        => 'cesarpil_androidteam',
-        'user'          => 'cesarpil_andteam',
-        'password'      => 'abcd2014$$$',
-        'charset'       => 'utf8',
-        'driverOptions' => array(1002 => 'SET NAMES utf8',),
-);
+        'driver' => 'pdo_mysql',
+        'host' => 'localhost',
+        'dbname' => 'cesarpil_androidteam',
+        'user' => 'cesarpil_andteam',
+        'password' => 'abcd2014$$$',
+        'charset' => 'utf8',
+        'driverOptions' => array(
+                1002 => 'SET NAMES utf8'));
 $entityManager = EntityManager::create($connectionOptions, $config);
 
 $app = new Silex\Application();
 $app['debug'] = true;
 $app['em'] = $entityManager;
- 
-$app->get('/actividad', function()   use ($app){    
-    $repo= $app['em']->getRepository('Entity\TbActividad');
-    $results = $repo->createQueryBuilder('a')
-    ->select('a')
-    ->getQuery()
-    ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-    return json_encode($results);    
+
+$app->get('/actividad', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbActividad');
+    $results = $repo->createQueryBuilder('a')->select('a')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
 });
 
-$app->post('/actividad', function(Request $request) use ($app){
-  $idPlanificacion =  $request->get('id_planificacion');  
-  $descripcionActividad = $request->get('descripcion_actividad');
-  $idTipoActividad=  $request->get('id_tipo_actividad');
-  $idIpr=$request->get('id_ipr');
-  $fechaSemanaActividad=$request->get('fecha_semana_actividad');
-    $idProyecto=$request->get('id_proyecto');
-    $hhPlanificadaLunes=$request->get('hh_planificada_lunes');
-    $hhRealLunes=$request->get('hh_real_lunes');
-    $hhPlanificadaMartes=$request->get('hh_planificada_martes');
-    $hhRealMartes=$request->get('hh_real_martes');
-    $hhPlanificadaMiercoles=$request->get('hh_planificada_miercoles');
-    $hhRealMiercoles= $request->get('hh_real_miercoles');
+$app->get('/ipr', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbIpr');
+    $results = $repo->createQueryBuilder('i')->select('i')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+$app->get('/origen', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbOrigen');
+    $results = $repo->createQueryBuilder('o')->select('o')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+$app->get('/planificacion', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbPlanificacion');
+    $results = $repo->createQueryBuilder('p')->select('p')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+
+$app->get('/proyecto', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbProyecto');
+    $results = $repo->createQueryBuilder('p')->select('p')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+$app->get('/tipo_actividad', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbTipoActividad');
+    $results = $repo->createQueryBuilder('p')->select('p')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+$app->get('/user', function () use($app) {
+    $repo = $app['em']->getRepository('Entity\TbUser');
+    $results = $repo->createQueryBuilder('u')->select('u')->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+$app->get('/user/buscar/{correo}/{clave}', function ($correo, $clave) use($app) {
+    $repo = $app['em']->getRepository('Entity\TbUser');
+    $results = $repo->createQueryBuilder('u')->select('u')->where('u.correo = :correo AND u.clave = :clave')->setParameter('correo', $correo)->setParameter('clave', $clave)->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+    return json_encode($results);
+});
+
+$app->post('/actividad', function (Request $request) use($app) {
+    $idPlanificacion = $request->get('id_planificacion');
+    $descripcionActividad = $request->get('descripcion_actividad');
+    $idTipoActividad = $request->get('id_tipo_actividad');
+    $idIpr = $request->get('id_ipr');
+    $fechaSemanaActividad = $request->get('fecha_semana_actividad');
+    $idProyecto = $request->get('id_proyecto');
+    $hhPlanificadaLunes = $request->get('hh_planificada_lunes');
+    $hhRealLunes = $request->get('hh_real_lunes');
+    $hhPlanificadaMartes = $request->get('hh_planificada_martes');
+    $hhRealMartes = $request->get('hh_real_martes');
+    $hhPlanificadaMiercoles = $request->get('hh_planificada_miercoles');
+    $hhRealMiercoles = $request->get('hh_real_miercoles');
     $hhPlanificadaJueves = $request->get('hh_planificada_jueves');
-    $hhRealJueves=$request->get('hh_real_jueves');
-    $hhPlanificadaViernes =$request->get('hh_planificada_viernes');
-    $hhRealViernes=$request->get('hh_real_viernes');
-    $hhPlanificadaSabado=$request->get('hh_planificada_sabado');
-    $hhRealSabado=$request->get('hh_real_sabado');
-    $hhPlanificadaDomingo=$request->get('hh_planificada_domingo');
-    $hhRealDomingo=$request->get('hh_real_domingo');
-    $idOrigen=$request->get('id_origen');
+    $hhRealJueves = $request->get('hh_real_jueves');
+    $hhPlanificadaViernes = $request->get('hh_planificada_viernes');
+    $hhRealViernes = $request->get('hh_real_viernes');
+    $hhPlanificadaSabado = $request->get('hh_planificada_sabado');
+    $hhRealSabado = $request->get('hh_real_sabado');
+    $hhPlanificadaDomingo = $request->get('hh_planificada_domingo');
+    $hhRealDomingo = $request->get('hh_real_domingo');
+    $idOrigen = $request->get('id_origen');
     
     $fechaSemanaActividad = \DateTime::createFromFormat('Y-m-d', $fechaSemanaActividad);
     
@@ -107,66 +143,143 @@ $app->post('/actividad', function(Request $request) use ($app){
     $app['em']->persist($newActividad);
     $app['em']->flush();
     
-    return json_encode(array('id' => $newActividad->getIdActividad()));
+    return json_encode(array(
+            'id' => $newActividad->getIdActividad()));
 });
+
+$app->post('/actividad', function (Request $request) use($app) {
+    $idPlanificacion = $request->get('id_planificacion');
+    $descripcionActividad = $request->get('descripcion_actividad');
+    $idTipoActividad = $request->get('id_tipo_actividad');
+    $idIpr = $request->get('id_ipr');
+    $fechaSemanaActividad = $request->get('fecha_semana_actividad');
+    $idProyecto = $request->get('id_proyecto');
+    $hhPlanificadaLunes = $request->get('hh_planificada_lunes');
+    $hhRealLunes = $request->get('hh_real_lunes');
+    $hhPlanificadaMartes = $request->get('hh_planificada_martes');
+    $hhRealMartes = $request->get('hh_real_martes');
+    $hhPlanificadaMiercoles = $request->get('hh_planificada_miercoles');
+    $hhRealMiercoles = $request->get('hh_real_miercoles');
+    $hhPlanificadaJueves = $request->get('hh_planificada_jueves');
+    $hhRealJueves = $request->get('hh_real_jueves');
+    $hhPlanificadaViernes = $request->get('hh_planificada_viernes');
+    $hhRealViernes = $request->get('hh_real_viernes');
+    $hhPlanificadaSabado = $request->get('hh_planificada_sabado');
+    $hhRealSabado = $request->get('hh_real_sabado');
+    $hhPlanificadaDomingo = $request->get('hh_planificada_domingo');
+    $hhRealDomingo = $request->get('hh_real_domingo');
+    $idOrigen = $request->get('id_origen');
     
-$app->get('/ipr', function()   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbIpr');
-        $results = $repo->createQueryBuilder('i')
-               ->select('i')
-               ->getQuery()
-               ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);        
-        return json_encode($results);
+    $fechaSemanaActividad = \DateTime::createFromFormat('Y-m-d', $fechaSemanaActividad);
+    
+    $newActividad = new \Entity\TbActividad();
+    $newActividad->setIdPlanificacion($idPlanificacion);
+    $newActividad->setDescripcionActividad($descripcionActividad);
+    $newActividad->setIdTipoActividad($idTipoActividad);
+    $newActividad->setIdIpr($idIpr);
+    $newActividad->setFechaSemanaActividad($fechaSemanaActividad);
+    $newActividad->setIdProyecto($idProyecto);
+    $newActividad->setHhPlanificadaLunes($hhPlanificadaLunes);
+    $newActividad->setHhPlanificadaMartes($hhPlanificadaMartes);
+    $newActividad->setHhPlanificadaMiercoles($hhPlanificadaMiercoles);
+    $newActividad->setHhPlanificadaJueves($hhPlanificadaJueves);
+    $newActividad->setHhPlanificadaViernes($hhPlanificadaViernes);
+    $newActividad->setHhPlanificadaSabado($hhPlanificadaSabado);
+    $newActividad->setHhPlanificadaDomingo($hhPlanificadaDomingo);
+    $newActividad->setHhRealLunes($hhRealLunes);
+    $newActividad->setHhRealMartes($hhRealMartes);
+    $newActividad->setHhRealMiercoles($hhRealMiercoles);
+    $newActividad->setHhRealJueves($hhRealJueves);
+    $newActividad->setHhRealViernes($hhRealViernes);
+    $newActividad->setHhRealSabado($hhRealSabado);
+    $newActividad->setHhRealDomingo($hhRealDomingo);
+    $newActividad->setIdOrigen($idOrigen);
+    
+    $app['em']->persist($newActividad);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newActividad->getIdActividad()));
 });
-$app->get('/origen', function()   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbOrigen');
-        $results = $repo->createQueryBuilder('o')
-        ->select('o')
-        ->getQuery()
-        ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-        return json_encode($results);
+$app->post('/ipr', function (Request $request) use($app) {
+    $nroIpr = $request->get('nro_ipr');
+    $newEntity = new \Entity\TbIpr();
+    $newEntity->setNroIpr($nroIpr);
+    
+    $app['em']->persist($newEntity);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newEntity->getIdIpr()));
+});
+$app->post('/origen', function (Request $request) use($app) {
+    $descripcionOrigen = $request->get('descripcion_origen');
+    $newEntity = new \Entity\TbOrigen();
+    $newEntity->setDescripcionOrigen($descripcionOrigen);
+    
+    $app['em']->persist($newEntity);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newEntity->getIdOrigen()));
+});
+$app->post('/planificacion', function (Request $request) use($app) {
+    $idUserCoordinador = $request->get('id_user_coordinador');
+    $idUserColaborador = $request->get('id_user_colaborador');
+    $newEntity = new \Entity\TbPlanificacion();
+    $newEntity->setIdUserColaborador($idUserColaborador);
+    $newEntity->setIdUserCoordinador($idUserCoordinador);
+    
+    $app['em']->persist($newEntity);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newEntity->getIdPlanificacion()));
+});
+
+$app->post('/proyecto', function (Request $request) use($app) {
+    $nroProyecto = $request->get('nro_proyecto');
+    $newEntity = new \Entity\TbProyecto();
+    $newEntity->setNroProyecto($nroProyecto);
+    
+    $app['em']->persist($newEntity);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newEntity->getIdProyecto()));
+});
+$app->post('/tipo_actividad', function (Request $request) use($app) {
+    $descripcionActividad = $request->get('descripcion_actividad');
+    $newEntity = new \Entity\TbTipoActividad();
+    $newEntity->setDescripcionActividad($descripcionActividad);
+    
+    $app['em']->persist($newEntity);
+    $app['em']->flush();
+    
+    return json_encode(array(
+            'id' => $newEntity->getIdTipoActividad()));
+});
+    $app->post('/user', function (Request $request) use($app) {
+        $correo = $request->get('correo');
+        $nombre = $request->get('nombre');
+        $apellidos = $request->get('apellidos');
+        $clave = $request->get('clave');
+        $cargo = $request->get('cargo');
+        $codTipo = $request->get('cod_tipo');
+        
+        $newEntity = new \Entity\TbUser();
+        $newEntity->setCorreo($correo);
+        $newEntity->setNombre($nombre);
+        $newEntity->setApellidos($apellidos);
+        $newEntity->setClave($clave);
+        $newEntity->setCargo($cargo);
+        $newEntity->setCodTipo($codTipo);
+        
+    
+        $app['em']->persist($newEntity);
+        $app['em']->flush();
+    
+        return json_encode(array(
+                'id' => $newEntity->getId()));
     });
-$app->get('/planificacion', function()   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbPlanificacion');
-        $results = $repo->createQueryBuilder('p')
-        ->select('p')
-        ->getQuery()
-        ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-        return json_encode($results);
-});
-    $app->get('/proyecto', function()   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbProyecto');
-        $results = $repo->createQueryBuilder('p')
-        ->select('p')
-        ->getQuery()
-        ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-        return json_encode($results);
-    });
-        $app->get('/tipo_actividad', function()   use ($app){
-            $repo= $app['em']->getRepository('Entity\TbTipoActividad');
-            $results = $repo->createQueryBuilder('p')
-            ->select('p')
-            ->getQuery()
-            ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-            return json_encode($results);
-        });
-$app->get('/user', function()   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbUser');
-        $results = $repo->createQueryBuilder('u')
-        ->select('u')
-        ->getQuery()
-        ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-        return json_encode($results);
-});
-$app->get('/user/buscar/{correo}/{clave}', function($correo,$clave)   use ($app){
-        $repo= $app['em']->getRepository('Entity\TbUser');
-        $results = $repo->createQueryBuilder('u')
-        ->select('u')
-        ->where('u.correo = :correo AND u.clave = :clave')
-        ->setParameter('correo', $correo)
-        ->setParameter('clave', $clave)
-        ->getQuery()
-        ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-        return json_encode($results);
-});
 $app->run();
